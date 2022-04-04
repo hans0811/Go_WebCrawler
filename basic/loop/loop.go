@@ -3,8 +3,10 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func converToBin(n int) interface{} {
@@ -25,7 +27,11 @@ func printFile(filename string) {
 		panic(err)
 	}
 
-	scanner := bufio.NewScanner(file)
+	printFileContent(file)
+}
+
+func printFileContent(reader io.Reader) {
+	scanner := bufio.NewScanner(reader)
 
 	for scanner.Scan() {
 		fmt.Println(scanner.Text())
@@ -34,7 +40,7 @@ func printFile(filename string) {
 
 func forever() {
 	for {
-		fmt.Println("abc")
+		fmt.Println("/Users/hans/Desktop/GO/GO_tutorial/001_go_env/basic/abc.txt")
 	}
 }
 
@@ -45,5 +51,11 @@ func main() {
 		converToBin(13),
 	)
 
-	printFile("abc.txt")
+	s := `abd"d"
+			kkkk
+			123
+
+			p`
+	printFileContent(strings.NewReader(s))
+	printFile("/Users/hans/Desktop/GO/GO_tutorial/001_go_env/basic/abc.txt")
 }
