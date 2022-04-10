@@ -1,17 +1,22 @@
 package queue
 
-type Queue []int
+// An FIFO queue.
+type Queue []interface {
+}
 
-func (q *Queue) Push(v int) {
+// Pushes the element into the queue
+func (q *Queue) Push(v interface{}) {
 	*q = append(*q, v)
 }
 
-func (q *Queue) Pop() int {
+// Pops element from head.
+func (q *Queue) Pop() interface{} {
 	head := (*q)[0]
 	*q = (*q)[1:]
 	return head
 }
 
+// Returns if the queue is empty or not
 func (q *Queue) IsEmpty() bool {
 	return len(*q) == 0
 }
