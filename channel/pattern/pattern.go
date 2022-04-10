@@ -11,7 +11,7 @@ func msgGen(name string) chan string {
 	go func() {
 		i := 0
 		for {
-			time.Sleep(time.Duration(rand.Intn(2000)) * time.Millisecond)
+			time.Sleep(time.Duration(rand.Intn(5000)) * time.Millisecond)
 			c <- fmt.Sprintf("service %s: message %d", name, i)
 			i++
 		}
@@ -63,17 +63,35 @@ func nonBlockingWaiting(c chan string) (string, bool) {
 	}
 }
 
+func timeoutWait(c chan string, timeout time.Duration) (string, bool) {
+	select {
+	case m := <-c:
+		return m, true
+	case <-time.After(timeout):
+		return "", false
+	}
+
+}
+
 func main() {
 	m1 := msgGen("service1") // publish message, handle
-	m2 := msgGen("service2")
-	m3 := msgGen("service3")
-	m := fanIn(m1, m2, m3)
+	//m2 := msgGen("service2")
 	for {
 		//fmt.Println(<-m1)
 		//fmt.Println(<-m2)
 
-		fmt.Println(<-m)
-		// test 123
+		fmt.Println(<-m1)
 
+		if m, ok := timeoutWait(m1, 2*time.Second); ok {
+			fmt.Println(m)
+		} else {
+			fmt.Println("timeout")
+		}
+
+		//if m, ok := nonBlockingWaiting(m2); ok {
+		//	fmt.Println(m)
+		//} else {
+		//	fmt.Println("no message from service2")
+		//}
 	}
 }
