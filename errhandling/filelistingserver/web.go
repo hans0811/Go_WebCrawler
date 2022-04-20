@@ -4,6 +4,7 @@ import (
 	"001_go_env/errhandling/filelistingserver/filelisting"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 )
 
