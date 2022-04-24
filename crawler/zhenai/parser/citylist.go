@@ -2,7 +2,6 @@ package parser
 
 import (
 	"001_go_env/crawler/engine"
-	"fmt"
 	"regexp"
 )
 
@@ -14,16 +13,23 @@ func ParseCityList(contents []byte) engine.ParseResult {
 	matches := re.FindAllSubmatch(contents, -1) //return [][][]
 
 	result := engine.ParseResult{}
+	// Giving Limitation
+	limit := 10;
 	for _, m := range matches {
 
-		result.Items = append(result.Items, m[2])
+		result.Items = append(result.Items, "City " + string(m[2]))
 
 		result.Requests = append(result.Requests, engine.Request{
 			Url:        string(m[1]),
-			ParserFunc: engine.NilParser,
+			ParserFunc: ParseCity,
 		})
 
-		fmt.Printf("City: %s\n, URL: %s\n", m[2], m[1])
+		limit--
+		if limit == 0{
+			break
+		}
+
+		//fmt.Printf("City: %s\n, URL: %s\n", m[2], m[1])
 	}
 
 	//fmt.Printf("Matches found: %d\n", len(matches))
