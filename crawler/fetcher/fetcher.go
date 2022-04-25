@@ -6,10 +6,13 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
+var rateLimiter = time.Tick(10* time.Millisecond)
 func Fetch(url string) ([]byte, error) {
-
+	// Every work will use rateLimiter
+	<-rateLimiter
 	//resp, err := http.Get(url)
 	//
 	//if err != nil {
