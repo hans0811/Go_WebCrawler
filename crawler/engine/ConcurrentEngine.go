@@ -8,10 +8,16 @@ type ConcurrentEngine struct {
 }
 
 type Scheduler interface {
+	ReadyNotifier
 	Submit(Request)
-	ConfigureMasterWorkChan(chan Request)
-	WorkerReady(chan Request)
+	WorkerChan() chan Request
+	//ConfigureMasterWorkChan(chan Request)
+	//WorkerReady(chan Request)
 	Run()
+}
+
+type ReadyNotifier interface {
+	WorkerReady(chan Request)
 }
 
 
@@ -25,7 +31,7 @@ func (e *ConcurrentEngine) Run(seeds ...Request){
 	e.Scheduler.Run()
 
 	for i :=0; i < e.WorkerCount; i++{
-		creatWorker(out, e.Scheduler)
+		creatWorker(e.Scheduler.WorkerChan(), out, e.Scheduler)
 	}
 
 	// Wait for creating workers
@@ -41,6 +47,7 @@ func (e *ConcurrentEngine) Run(seeds ...Request){
 		result := <- out
 		for _, itme := range result.Items{
 			fmt.Printf("Got item #%d: %v", itemCount, itme)
+			fmt.Println()
 			itemCount++
 		}
 
@@ -52,12 +59,11 @@ func (e *ConcurrentEngine) Run(seeds ...Request){
 
 }
 
-func creatWorker(out chan ParseResult, s Scheduler){
-	in := make(chan Request)
+func creatWorker(in chan Request, out chan ParseResult, ready ReadyNotifier){
 	go func() {
 		for{
 			// tell scheduler I am ready
-			s.WorkerReady(in)
+			ready.WorkerReady(in)
 			request := <- in
 			result, err := worker(request)
 
@@ -68,5 +74,4 @@ func creatWorker(out chan ParseResult, s Scheduler){
 			out <- result
 		}
 	}()
-
 }
