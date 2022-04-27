@@ -1,6 +1,10 @@
 package engine
 
-import "fmt"
+import (
+	"001_go_env/crawler/model"
+	"fmt"
+	"log"
+)
 
 type ConcurrentEngine struct {
 	Scheduler Scheduler
@@ -36,22 +40,38 @@ func (e *ConcurrentEngine) Run(seeds ...Request){
 
 	// Wait for creating workers
 	for _, r := range seeds{
+		// URL dedup
+		if isDuplicate(r.Url){
+			log.Printf("Duplivate request: "+ "%s", r.Url)
+			continue
+		}
 		e.Scheduler.Submit(r)
 	}
 
 	// count real
 	itemCount := 0
+	profileCount := 0
 
 	// received out
 	for{
 		result := <- out
-		for _, itme := range result.Items{
-			fmt.Printf("Got item #%d: %v", itemCount, itme)
+		for _, item := range result.Items{
+			if _, ok := item.(model.Profile); ok{
+				fmt.Printf("Got item #%d: %v", profileCount, item)
+				profileCount++
+			}
+
+			fmt.Printf("Got item #%d: %v", itemCount, item)
 			fmt.Println()
 			itemCount++
 		}
 
+		// URL dedup
 		for _, request := range result.Requests{
+			if isDuplicate(request.Url){
+				log.Printf("Duplivate request: "+ "%s", request.Url)
+				continue
+			}
 			// the request need to consume
 			e.Scheduler.Submit(request)
 		}
@@ -74,4 +94,13 @@ func creatWorker(in chan Request, out chan ParseResult, ready ReadyNotifier){
 			out <- result
 		}
 	}()
+}
+
+var visitedUrls = make(map[string]bool)
+func isDuplicate(url string) bool{
+	if visitedUrls[url]{
+		return true
+	}
+	visitedUrls[url] = true
+	return false
 }
