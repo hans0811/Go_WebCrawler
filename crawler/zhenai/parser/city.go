@@ -5,29 +5,29 @@ import (
 	"regexp"
 )
 
-var (profileRe = regexp.MustCompile(
-	`<a href="(http://album.zhenai.com/u/[0-9]+)"[^>]*>([^<]+)</a>`)
-cityUrlRe = regexp.MustCompile(`href="(http://www.zhenai.com/zhenghun/[^"]+)"`)
-
+var (
+	profileRe = regexp.MustCompile(
+		`<a href="(.*album\.zhenai\.com/u/[0-9]+)"[^>]*>([^<]+)</a>`)
+	cityUrlRe = regexp.MustCompile(
+		`href="(.*www\.zhenai\.com/zhenghun/[^"]+)"`)
 )
 
-func ParseCity(contents []byte) engine.ParseResult{
+func ParseCity(contents []byte, _ string) engine.ParseResult{
 	matches := profileRe.FindAllSubmatch(contents, -1) //return [][][]
 
 	result := engine.ParseResult{}
 	for _, m := range matches {
 
 		// m[2] is in for block
-		name := string(m[2])
+		//name := string(m[2])
+		url := string(m[1])
 
-		result.Items = append(result.Items, "User " + name)
+		//result.Items = append(result.Items, "User " + name)
 
 		result.Requests = append(result.Requests, engine.Request{
-			Url:        string(m[1]),
+			Url:        url,
 			// using anonymous function, because username can be pass in
-			ParserFunc: func(c []byte) engine.ParseResult{
-				return ParseProfile(c, name)
-			},
+			ParserFunc: ProfileParser(string(m[2])),
 		})
 
 		//fmt.Printf("City: %s\n, URL: %s\n", m[2], m[1])

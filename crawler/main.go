@@ -2,6 +2,7 @@ package main
 
 import (
 	"001_go_env/crawler/engine"
+	"001_go_env/crawler/persist"
 	"001_go_env/crawler/scheduler"
 	"001_go_env/crawler/zhenai/parser"
 )
@@ -14,21 +15,27 @@ func main() {
 	//	ParserFunc: parser.ParseCityList,
 	//})
 
+	itemChan, err := persist.ItemSaver("dating_profile")
+	if err != nil{
+		// itemChan must be started for saving data
+		panic(err)
+	}
 	e := engine.ConcurrentEngine{
 		//QueuedScheduler
 		Scheduler: &scheduler.QueuedScheduler{},
 		WorkerCount: 100,
+		ItemChan: itemChan,
 	}
 
-	//e.Run(engine.Request{
-	//	Url: "https://www.zhenai.com/zhenghun",
-	//	ParserFunc: parser.ParseCityList,
-	//})
-
 	e.Run(engine.Request{
-		Url: "http://www.zhenai.com/zhenghun/shanghai",
-		ParserFunc: parser.ParseCity,
+		Url: "http://localhost:8080/mock/www.zhenai.com/zhenghun",
+		ParserFunc: parser.ParseCityList,
 	})
+
+	//e.Run(engine.Request{
+	//	Url: "http://localhost:8080/mock/www.zhenai.com/zhenghun",
+	//	ParserFunc: parser.ParseCity,
+	//})
 
 
 	//resp, err := http.Get("https://www.zhenai.com/zhenghun")

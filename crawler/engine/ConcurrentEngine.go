@@ -1,14 +1,13 @@
 package engine
 
 import (
-	"001_go_env/crawler/model"
-	"fmt"
 	"log"
 )
 
 type ConcurrentEngine struct {
 	Scheduler Scheduler
 	WorkerCount int
+	ItemChan chan Item
 }
 
 type Scheduler interface {
@@ -49,21 +48,21 @@ func (e *ConcurrentEngine) Run(seeds ...Request){
 	}
 
 	// count real
-	itemCount := 0
-	profileCount := 0
+	//itemCount := 0
+	//profileCount := 0
 
 	// received out
 	for{
 		result := <- out
 		for _, item := range result.Items{
-			if _, ok := item.(model.Profile); ok{
-				fmt.Printf("Got item #%d: %v", profileCount, item)
-				profileCount++
-			}
 
-			fmt.Printf("Got item #%d: %v", itemCount, item)
-			fmt.Println()
-			itemCount++
+			//log.Printf("Got item #%d: %v", itemCount, item)
+			//itemCount++
+
+			// Don't save the item in the engine
+			// so create a goroutine
+			// save(item)
+			go func() { e.ItemChan <- item  }()
 		}
 
 		// URL dedup
