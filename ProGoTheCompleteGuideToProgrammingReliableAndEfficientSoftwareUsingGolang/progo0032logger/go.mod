@@ -1,0 +1,3 @@
+module PROGO0032LOGGER
+
+go 1.18
